@@ -1,0 +1,184 @@
+#!/usr/bin/env python
+#%Module
+#% description: Creates Gabor filter bank for an n-dimensional image
+#% overwrite: yes
+#% keyword: raster
+#% keyword: filter
+#%End
+
+# FLAGS
+#%flag
+#% key: c
+#% description: Make combined averaged raster
+#%end
+#%flag
+#% key: h
+#% description: Print help
+#%end
+
+# OPTIONS
+#%option
+#% key: input
+#% type: string
+#% required: yes
+#% description: Input
+#%end
+#%option
+#% key: output
+#% type: string
+#% required: yes
+#% description: Output
+#%end
+#%option
+#% key: size
+#% type: integer
+#% required: no
+#% description: Size of the window
+#% answer: 11
+#%end
+#%option
+#% key: stddev
+#% type: integer
+#% required: no
+#% description: Number of standard deviation from the center
+#% answer: 3
+#%end
+#%option
+#% key: orientation
+#% type: integer
+#% required: no
+#% multiple: yes
+#% description: List of orientations in degrees
+#% answer: 0, 45, 90, 135
+#%end
+#%option
+#% key: wavelength
+#% type: double
+#% required: no
+#% description: Wavelengh of sinusoidal wave
+#% answer: 5
+#%end
+#%option
+#% key: offset
+#% type: integer
+#% required: no
+#% description: Phase offset from the center
+#% answer: 0
+#%end
+#%option
+#% key: aspect
+#% type: double
+#% required: no
+#% description: Aspect ratio, specifies ellipticity
+#% answer: 0.5
+#%end
+
+import grass.script as grass
+from grass.script import array as garray
+import numpy as np
+
+
+def deg_to_radians(deg):
+    return deg * np.pi / 180
+
+
+def radians_to_deg(rad):
+    return rad * 180 / np.pi
+
+
+def get_center(shape):
+    return shape[0] // 2, shape[1] // 2
+
+
+def cart_to_logpol(x, y, xc, yc):
+    p = np.log(((x - xc) ** 2 + (y - yc) ** 2) ** (1 / 2))
+    theta = np.arctan2(y - yc, x - yc)
+    return p, theta
+
+
+def gabor_filter(win_size, stddev, orientation, wavelength, offset, aspect):
+
+    # Get half size of full kernel
+    xy = win_size // 2
+
+    # Sigma in x direction
+    sigma_x = stddev
+    # Specify ellipticity of gaussian curve
+    sigma_y = float(stddev) / aspect
+    stddev = stddev
+
+    # Create meshgrid for vectorized NumPy functions
+    (y, x) = np.meshgrid(np.arange(-xy, xy + 1), np.arange(-xy, xy + 1))
+
+    # Convert degrees to radians
+    radian = deg_to_radians(orientation)
+    # Rotation
+    x_radian = x * np.cos(radian) + y * np.sin(radian)
+    y_radian = -x * np.sin(radian) + y * np.cos(radian)
+
+    # Create gaussian with specified orientation
+    gaussian = np.exp(
+        -0.5 * (x_radian ** 2 / sigma_x ** 2 + y_radian ** 2 / sigma_y ** 2)
+    )
+
+    # Create oscilating sin wave
+    waveform = np.cos(2 * np.pi / wavelength * x_radian + offset)
+    gabor = gaussian * waveform
+    return gabor
+
+
+def gabor_convolve(inarr, filter_list):
+    if len(filter_list) == 1:
+        return fftconvolve(inarr, filter_list[0], mode="same")
+
+    return np.average([fftconvolve(inarr, f, mode="same") for f in filter_list], axis=0)
+
+
+if __name__ == "__main__":
+    # Lazy import for scipy.signal.fftconvolve
+    try:
+        from scipy.signal import fftconvolve
+    except ImportError:
+        grass.fatal("Cannot import fftconvolve from scipy")
+
+    import time
+
+    start = time.time()
+
+    # Parse options and flags
+    options, flags = grass.parser()
+
+    if flags.get("h"):
+        print(flags)
+        print(options)
+
+    input = options.get("input")
+    output = options.get("output")
+
+    win_size = int(options.get("size"))
+    print(win_size)
+    stddev = int(options.get("stddev"))
+    print(stddev)
+    orientation = [int(o) for o in options.get("orientation").split(",")]
+    print(orientation)
+    wavelength = float(options.get("wavelength"))
+    print(wavelength)
+    offset = float(options.get("offset"))
+    print(offset)
+    aspect = float(options.get("aspect"))
+    print(aspect)
+
+    filters = []
+    for deg in orientation:
+        filter = gabor_filter(win_size, stddev, deg, wavelength, offset, aspect)
+        filters.append(filter)
+
+    print(input)
+    inarr = garray.array()
+    inarr.read(input)
+    print(inarr.shape)
+    outarr = garray.array()
+    outarr[...] = gabor_convolve(inarr, filters)
+    outarr.write(output)
+
+    print(time.time() - start)
