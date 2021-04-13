@@ -177,8 +177,9 @@ if __name__ == "__main__":
     inarr = garray.array()
     inarr.read(input)
     print(inarr.shape)
+    garr = gabor_convolve(inarr, filters)
     outarr = garray.array()
-    outarr[...] = gabor_convolve(inarr, filters)
+    outarr[...] = (255*(garr - np.min(garr))/np.ptp(garr)).astype(int)
     outarr.write(output)
 
     print(time.time() - start)
