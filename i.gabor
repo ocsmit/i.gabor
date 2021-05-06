@@ -12,8 +12,12 @@
 #% description: Make combined averaged raster
 #%end
 #%flag
-#% key: h
-#% description: Print help
+#% key: i
+#% description: Use imaginary number output
+#%end
+#%flag
+#% key: q
+#% description: Create binary quantified output
 #%end
 
 # OPTIONS
@@ -37,13 +41,6 @@
 #% answer: 11
 #%end
 #%option
-#% key: stddev
-#% type: integer
-#% required: no
-#% description: Number of standard deviation from the center
-#% answer: 3
-#%end
-#%option
 #% key: orientation
 #% type: integer
 #% required: no
@@ -56,7 +53,7 @@
 #% type: double
 #% required: no
 #% description: Wavelengh of sinusoidal wave
-#% answer: 5
+#% answer: 3
 #%end
 #%option
 #% key: offset
@@ -71,6 +68,20 @@
 #% required: no
 #% description: Aspect ratio, specifies ellipticity
 #% answer: 0.5
+#%end
+#%option
+#% key: threshold
+#% type: integer
+#% required: no
+#% description: Threshold to extract
+#% answer: 0
+#%end
+#%option
+#% key: type
+#% type: string
+#% required: no
+#% description: Threshold to extract
+#% answer: "real"
 #%end
 
 import grass.script as grass
@@ -127,11 +138,38 @@ def gabor_filter(win_size, stddev, orientation, wavelength, offset, aspect):
     return gabor
 
 
-def gabor_convolve(inarr, filter_list):
-    if len(filter_list) == 1:
-        return fftconvolve(inarr, filter_list[0], mode="same")
+def gabor2d(win_size, orientation=0, wavelength=5, aspect=0.5, offset=0, ntype='real'):
+    # Get window size +/- around origin
+    xy = win_size // 2
 
-    return np.average([fftconvolve(inarr, f, mode="same") for f in filter_list], axis=0)
+    # Check to make sure wave length is not greater than half the window size
+    if wavelength >= xy:
+        raise Exception("Need smaller wavelength")
+
+    orientation = deg_to_radians(orientation)
+    stddev = xy // wavelength
+    max = xy
+    min = -xy
+    (y, x) = np.meshgrid(np.arange(min, max + 1), np.arange(min, max + 1))
+    xr = x * np.cos(orientation) + y * np.sin(orientation)
+    yr = -x * np.sin(orientation) + y * np.cos(orientation)
+
+    gaussian = np.exp(-((xr ** 2 + aspect ** 2 * yr ** 2) / (2 * stddev**2)))
+    if ntype == 'imag':
+        sf = np.sin(2 * np.pi * xr / wavelength + offset)
+    else:
+        sf = np.cos(2 * np.pi * xr / wavelength + offset)
+    return gaussian * sf
+
+
+def gabor_convolve(inarr, kern, thresh, quantify=0):
+    con = fftconvolve(inarr, kern, mode="same")
+    if not thresh:
+        return con
+    per = np.percentile(con, thresh)
+    if quantify > 0:
+        return np.where(con >= per, quantify, 0)
+    return np.where(con >= per, con, 0)
 
 
 if __name__ == "__main__":
@@ -141,45 +179,57 @@ if __name__ == "__main__":
     except ImportError:
         grass.fatal("Cannot import fftconvolve from scipy")
 
-    import time
 
-    start = time.time()
 
     # Parse options and flags
     options, flags = grass.parser()
 
-    if flags.get("h"):
-        print(flags)
-        print(options)
 
     input = options.get("input")
     output = options.get("output")
 
     win_size = int(options.get("size"))
-    print(win_size)
-    stddev = int(options.get("stddev"))
-    print(stddev)
     orientation = [int(o) for o in options.get("orientation").split(",")]
-    print(orientation)
-    wavelength = float(options.get("wavelength"))
-    print(wavelength)
+    wavelength = [float(f) for f in options.get('wavelength').split(",")]
     offset = float(options.get("offset"))
-    print(offset)
     aspect = float(options.get("aspect"))
-    print(aspect)
+    if flags.get('i'):
+        ntype = "imag"
+    else:
+        ntype = "real"
+    threshold = int(options.get("threshold"))
 
-    filters = []
+    if flags.get('q'):
+        q = [2 ** i for i in range(len(orientation))]
+    else:
+        q = 0
+
+
+    filters = {}
     for deg in orientation:
-        filter = gabor_filter(win_size, stddev, deg, wavelength, offset, aspect)
-        filters.append(filter)
+        for freq in wavelength:
+            name = f"{win_size}_{deg}_{freq}_{offset}_{aspect}"
+            filters[name] = gabor2d(win_size, deg, freq, aspect, offset, ntype)
 
-    print(input)
+
     inarr = garray.array()
     inarr.read(input)
-    print(inarr.shape)
-    garr = gabor_convolve(inarr, filters)
-    outarr = garray.array()
-    outarr[...] = (255*(garr - np.min(garr))/np.ptp(garr)).astype(int)
-    outarr.write(output)
+    if flags.get('c'):
+        convolved = []
+        if type(q) == list:
+            for i in range(len(filters.keys())):
+                name = list(filters.keys())[i]
+                convolved.append(gabor_convolve(inarr, filters.get(name), threshold, q[i]))
+        else:
+            for name in filters.keys():
+                convolved.append(gabor_convolve(inarr, filters.get(name), threshold))
+        outarr = garray.array()
+        out = np.sum(convolved, axis=0)
+        outarr[...] = out
+        outarr.write(output)
+    else:
+        for name in filters.keys():
+            outarr = garray.array()
+            outarr[...] = gabor_convolve(inarr, filters.get(name), threshold)
+            outarr.write(f"{name.replace('.', '')}_{output}")
 
-    print(time.time() - start)
