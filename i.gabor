@@ -45,19 +45,19 @@
 #% key: input
 #% type: string
 #% required: yes
-#% description: Input
+#% description: Input raster
 #%end
 #%option
 #% key: output
 #% type: string
 #% required: yes
-#% description: Output
+#% description: Output raster(s)
 #%end
 #%option
 #% key: size
 #% type: integer
 #% required: no
-#% description: Size of the window
+#% description: Window size
 #% answer: 11
 #%end
 #%option
@@ -72,36 +72,29 @@
 #% key: wavelength
 #% type: double
 #% required: no
-#% description: Wavelengh of sinusoidal wave
+#% description: Wavelength of sinusoidal wave in pixels
 #% answer: 3
 #%end
 #%option
 #% key: offset
 #% type: integer
 #% required: no
-#% description: Phase offset from the center
+#% description: Phase offset from the center of the window
 #% answer: 0
 #%end
 #%option
 #% key: aspect
 #% type: double
 #% required: no
-#% description: Aspect ratio, specifies ellipticity
+#% description: Aspect ratio, specifies ellipticity of kernel
 #% answer: 0.5
 #%end
 #%option
 #% key: threshold
 #% type: integer
 #% required: no
-#% description: Threshold to extract
+#% description: Percentile threshold to extract
 #% answer: 0
-#%end
-#%option
-#% key: type
-#% type: string
-#% required: no
-#% description: Threshold to extract
-#% answer: "real"
 #%end
 
 import os
@@ -142,6 +135,7 @@ def gabor2d(win_size, orientation=0, wavelength=5, aspect=0.5, offset=0, ntype="
         sf = np.sin(2 * np.pi * xr / wavelength + offset)
     else:
         sf = np.cos(2 * np.pi * xr / wavelength + offset)
+
     return gaussian * sf
 
 
@@ -173,8 +167,11 @@ if __name__ == "__main__":
     wavelength = [float(f) for f in options.get("wavelength").split(",")]
     offset = float(options.get("offset"))
     aspect = float(options.get("aspect"))
+
     if flags.get("i"):
         ntype = "imag"
+    elif flags.get("b"):
+        ntype = "b"
     else:
         ntype = "real"
     threshold = int(options.get("threshold"))
@@ -203,7 +200,7 @@ if __name__ == "__main__":
         else:
             for name in filters.keys():
                 convolved.append(
-                    gabor_convolve(inarr, filters.get(name), threshold])
+                    gabor_convolve(inarr, filters.get(name), threshold)
                 )
         outarr = garray.array()
         out = np.sum(convolved, axis=0)
