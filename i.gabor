@@ -1,97 +1,95 @@
 #!/usr/bin/env python
 
-############################################################################
+################################################################################
 #
-# MODULE: i.gabor
-# AUTHOR(S): Owen Smith <ocsmit@protonmail.com>
-#
-# PURPOSE:   Compute and convolve Gabor filter banks and for spatial imagery.
-#
-# COPYRIGHT: (C) 2021 Owen Smith, and the GRASS Development Team
+# MODULE:       i.gabor
+# AUTHOR(S):    Owen Smith <ocsmit@protonmail.com>
+# PURPOSE:      Compute and convolve Gabor filter banks and for spatial imagery.
+# COPYRIGHT:    (C) 2021 by Owen Smith
 #
 #               This program is free software under the GNU General
 #               Public License (>=v2). Read the file COPYING that
 #               comes with GRASS for details.
 #
-#############################################################################
+################################################################################
 
-#%Module
-#% description: Creates Gabor filter bank for an n-dimensional image
-#% overwrite: yes
-#% keyword: raster
-#% keyword: filter
-#%End
+# %module
+# % description: Creates Gabor filter bank for an n-dimensional image
+# % overwrite: yes
+# % keyword: raster
+# % keyword: filter
+# %end
 
 # FLAGS
-#%flag
-#% key: c
-#% description: Combine convolved filters into one raster
-#%end
-#%flag
-#% key: i
-#% description: Output imaginary component of filter, default is real component
-#%end
-#%flag
-#% key: q
-#% description: Create quantified binary output
-#%end
+# %flag
+# % key: c
+# % description: Combine convolved filters into one raster
+# %end
+# %flag
+# % key: i
+# % description: Output imaginary component of filter, default is real component
+# %end
+# %flag
+# % key: q
+# % description: Create quantified binary output
+# %end
 
 # OPTIONS
-#%option
-#% key: input
-#% type: string
-#% required: yes
-#% description: Input raster
-#%end
-#%option
-#% key: output
-#% type: string
-#% required: yes
-#% description: Output raster(s)
-#%end
-#%option
-#% key: size
-#% type: integer
-#% required: no
-#% description: Window size
-#% answer: 11
-#%end
-#%option
-#% key: orientation
-#% type: integer
-#% required: no
-#% multiple: yes
-#% description: List of orientations in degrees
-#% answer: 0, 45, 90, 135
-#%end
-#%option
-#% key: wavelength
-#% type: double
-#% required: no
-#% description: Wavelength of sinusoidal wave in pixels
-#% answer: 3
-#%end
-#%option
-#% key: offset
-#% type: integer
-#% required: no
-#% description: Phase offset from the center of the window
-#% answer: 0
-#%end
-#%option
-#% key: aspect
-#% type: double
-#% required: no
-#% description: Aspect ratio, specifies ellipticity of kernel
-#% answer: 0.5
-#%end
-#%option
-#% key: threshold
-#% type: integer
-#% required: no
-#% description: Percentile threshold to extract
-#% answer: 0
-#%end
+# %option
+# % key: input
+# % type: string
+# % required: yes
+# % description: Input raster
+# %end
+# %option
+# % key: output
+# % type: string
+# % required: yes
+# % description: Output raster(s)
+# %end
+# %option
+# % key: size
+# % type: integer
+# % required: no
+# % description: Window size
+# % answer: 11
+# %end
+# %option
+# % key: orientation
+# % type: integer
+# % required: no
+# % multiple: yes
+# % description: List of orientations in degrees
+# % answer: 0, 45, 90, 135
+# %end
+# %option
+# % key: wavelength
+# % type: double
+# % required: no
+# % description: Wavelength of sinusoidal wave in pixels
+# % answer: 3
+# %end
+# %option
+# % key: offset
+# % type: integer
+# % required: no
+# % description: Phase offset from the center of the window
+# % answer: 0
+# %end
+# %option
+# % key: aspect
+# % type: double
+# % required: no
+# % description: Aspect ratio, specifies ellipticity of kernel
+# % answer: 0.5
+# %end
+# %option
+# % key: threshold
+# % type: integer
+# % required: no
+# % description: Percentile threshold to extract
+# % answer: 0
+# %end
 
 import os
 import sys
