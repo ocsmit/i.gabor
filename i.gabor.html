@@ -1,44 +1,72 @@
 <h2>DESCRIPTION</h2>
 
 <p>
-<em>i.gabor</em> computes texture raster maps from a user-specified Gabor filter bank and raster map.
-The 2 dimensional gator filter is an orientation sensitive filter which mimics the cells
-within the human visual cortex.
-</p>
+<em>i.gabor</em> computes texture raster maps from a user-specified Gabor
+filter bank and raster map.
+The 2 dimensional Gabor filter is an orientation sensitive filter which mimics
+the cells within the human visual cortex.
 
 <p>
-The default orientations computed will be 0 (East/West), 45 (North-East/South-West), 90 North/South, 135 (North-West/South-East).
-However, the user can also specify any number of orientations in degrees less than 180 with the <em>orientation</em> option.
-The window size of the Gabor filter is specified by the user in <em>i.gabor</em>.
-The standard deviation of the Gaussian kernel before it is oscilated is tied to the user-specified window size.
-</p>
+The default orientations computed will be 0 (East/West), 45
+(North-East/South-West), 90 North/South, 135 (North-West/South-East).
+However, the user can also specify any number of orientations in degrees less
+than 180 with the <b>orientation</b> option.
+The window size of the Gabor filter is specified by the user in
+<em>i.gabor</em>
+The standard deviation of the Gaussian kernel before it is oscilated is tied to
+the user-specified window size.
 <p>
-The Gabor filter has both a real and imaginary component which can be used for different purposes.
-While <em>i.gabor</em> computes the real component by default, the imaginary component can be computed by using the flag <em>-i</em>.
-</p>
+The Gabor filter has both a real and imaginary component which can be used for
+different purposes.
+While <em>i.gabor</em> computes the real component by default, the imaginary
+component can be computed by using the flag <b>-i</b>.
 
 <p>
-By default <em>i.gabor</em> outputs each Gabor filter convolved raster map as individual raster maps with the prefix of <em>windowsize_orientation_wavelength_offset_aspect</em> with each part corresponding to its specified value.
-The <em>-c</em> flag can be used to create a singular combined raster map as the output.
-</p>
+By default <em>i.gabor</em> outputs each Gabor filter convolved raster map as
+individual raster maps with the prefix of <i>windowsize_orientation_wavelength_
+offset_aspect</i> with each part corresponding to its specified value.
+The <b>-c</b> flag can be used to create a singular combined raster map as the
+output.
 <p>
-<em>i.gabor</em> offers statistical thresholding which will set values below a user-specified percentile of the to 0 while keeping all values above the percentile the same.
-In conjunction with thresholding, a bitwise quantification method is implemented for the various orientations used.
-<em> add explainer </em>
-</p>
-
-</p>
+Additionally, <em>i.gabor</em> offers statistical thresholding which will set values below a
+user-specified percentile (<b>threshold</b>) of the to 0 while keeping all
+values above the percentile the same.
+In conjunction with thresholding, a bitwise quantification (<b>-q</b>) method
+is implemented for the orientations specified by the user.
 <h2>NOTES</h2>
 
-Common filter banks will consist of between 4 to 8 orientations and scales controlled by the
-wavelength.
-Each filter within a bank is subsequently convolved over the raster map and for each kernel within the bank.
-The resulting number of raster maps will be the number of orientations × the number of scales.
-The usage of a filter bank is what effectively models the visual cortex with the multiple orientations and frequencies being evaluated individually to create a low dimensional representation of a scene (Petkov, 1995)
-<p>
+Common filter banks will consist of between 4 to 8 orientations and scales
+controlled by the wavelength.
+Each filter within a bank is subsequently convolved over the raster map and for
+each kernel within the bank.
+The resulting number of raster maps will be the number of orientations x the
+number of scales.
+The usage of a filter bank is what effectively models the visual cortex with
+the multiple orientations and frequencies being evaluated individually to
+create a low dimensional representation of a scene (Petkov, 1995)
 
-<h2>AUTHORS</h2>
-<a href="mailto:ocsmit@protonmail.com">Owen Smith</a> - Institute for Environmental and Spatial Analysis<br>
+<h3>Orientation quantification</h3>
+The orientation quantificatation takes the index value (<i>i</i>) of each
+user-specified orientation and applies <i>2<sup>i</sup></i> for every value greater than
+or equal to the percentile value.
+Where a bit string position is equal to one it indicates the corresponding
+orientation<i><sub>i</sub></i> has a strong response.
+<div class="code"><pre>
+orientation = 0, 45, 90, 135
+0   = 0b00000001 = 1
+45  = 0b00000010 = 2
+90  = 0b00000100 = 4
+135 = 0b00001000 = 8
+</pre></div>
+This method will allow the values of the combined raster to be decomposed in
+order to evaluate which orientations had high responses for a given raster cell.
+I.e. if a cell has high responses at orientations 0 and 135 degrees, the
+combined raster cell will have a final output value of 9, which as a binary
+string is <i>0b00001001</i>.
+
+
+<h2>AUTHOR</h2>
+<a href="mailto:ocsmit@protonmail.com">Owen Smith</a>
 
 <!--
 <p>
