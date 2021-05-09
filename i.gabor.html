@@ -1,0 +1,47 @@
+<h2>DESCRIPTION</h2>
+
+<p>
+<em>i.gabor</em> computes texture raster maps from a user-specified Gabor filter bank and raster map.
+The 2 dimensional gator filter is an orientation sensitive filter which mimics the cells
+within the human visual cortex.
+</p>
+
+<p>
+The default orientations computed will be 0 (East/West), 45 (North-East/South-West), 90 North/South, 135 (North-West/South-East).
+However, the user can also specify any number of orientations in degrees less than 180 with the <em>orientation</em> option.
+The window size of the Gabor filter is specified by the user in <em>i.gabor</em>.
+The standard deviation of the Gaussian kernel before it is oscilated is tied to the user-specified window size.
+</p>
+<p>
+The Gabor filter has both a real and imaginary component which can be used for different purposes.
+While <em>i.gabor</em> computes the real component by default, the imaginary component can be computed by using the flag <em>-i</em>.
+</p>
+
+<p>
+By default <em>i.gabor</em> outputs each Gabor filter convolved raster map as individual raster maps with the prefix of <em>windowsize_orientation_wavelength_offset_aspect</em> with each part corresponding to its specified value.
+The <em>-c</em> flag can be used to create a singular combined raster map as the output.
+</p>
+<p>
+<em>i.gabor</em> offers statistical thresholding which will set values below a user-specified percentile of the to 0 while keeping all values above the percentile the same.
+In conjunction with thresholding, a bitwise quantification method is implemented for the various orientations used.
+<em> add explainer </em>
+</p>
+
+</p>
+<h2>NOTES</h2>
+
+Common filter banks will consist of between 4 to 8 orientations and scales controlled by the
+wavelength.
+Each filter within a bank is subsequently convolved over the raster map and for each kernel within the bank.
+The resulting number of raster maps will be the number of orientations × the number of scales.
+The usage of a filter bank is what effectively models the visual cortex with the multiple orientations and frequencies being evaluated individually to create a low dimensional representation of a scene (Petkov, 1995)
+<p>
+
+<h2>AUTHORS</h2>
+<a href="mailto:ocsmit@protonmail.com">Owen Smith</a> - Institute for Environmental and Spatial Analysis<br>
+
+<!--
+<p>
+<i>Last changed: $Date$</i>
+-->
+
