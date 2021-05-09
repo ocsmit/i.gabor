@@ -17,8 +17,11 @@
 # %module
 # % description: Creates Gabor filter bank for an n-dimensional image
 # % overwrite: yes
+# % keyword: imagery
+# % keyword: satellite
 # % keyword: raster
 # % keyword: filter
+# % keyword: Gabor
 # %end
 
 # FLAGS
