@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
-################################################################################
+############################################################################
 #
 # MODULE:       i.gabor
 # AUTHOR(S):    Owen Smith <ocsmit@protonmail.com>
-# PURPOSE:      Compute and convolve Gabor filter banks and for spatial imagery.
+# PURPOSE:      Compute and convolve Gabor filter banks and for spatial
+#               imagery.
 # COPYRIGHT:    (C) 2021 by Owen Smith
 #
 #               This program is free software under the GNU General
 #               Public License (>=v2). Read the file COPYING that
 #               comes with GRASS for details.
 #
-################################################################################
+############################################################################
 
 # %module
 # % description: Creates Gabor filter bank for an n-dimensional image
@@ -195,9 +196,7 @@ if __name__ == "__main__":
                 )
         else:
             for name in filters.keys():
-                convolved.append(
-                    gabor_convolve(inarr, filters.get(name), threshold)
-                )
+                convolved.append(gabor_convolve(inarr, filters.get(name), threshold))
         outarr = garray.array()
         out = np.sum(convolved, axis=0)
         outarr[...] = out
