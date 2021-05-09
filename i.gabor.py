@@ -140,12 +140,6 @@ def gabor_convolve(inarr, kern, thresh, quantify=0):
 
 
 def main():
-    # Lazy import for scipy.signal.fftconvolve
-    try:
-        from scipy.signal import fftconvolve
-    except ImportError:
-        grass.fatal("Cannot import fftconvolve from scipy")
-
     # Parse options and flags
     options, flags = grass.parser()
 
@@ -161,8 +155,6 @@ def main():
 
     if flags["i"]:
         ntype = "imag"
-    elif flags["b"]:
-        ntype = "b"
     else:
         ntype = "real"
 
@@ -201,5 +193,11 @@ def main():
             outarr.write(f"{name.replace('.', '')}_{output}")
 
 if __name__ == "__main__":
+    # Lazy import for scipy.signal.fftconvolve
+    try:
+        from scipy.signal import fftconvolve
+    except ImportError:
+        grass.fatal("Cannot import fftconvolve from scipy")
+
     options, flags = grass.parser()
     sys.exit(main())
