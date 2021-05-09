@@ -154,24 +154,24 @@ if __name__ == "__main__":
     # Parse options and flags
     options, flags = grass.parser()
 
-    input = options.get("input")
-    output = options.get("output")
+    input = options["input"]
+    output = options["output"]
 
-    win_size = int(options.get("size"))
-    orientation = [int(o) for o in options.get("orientation").split(",")]
-    wavelength = [float(f) for f in options.get("wavelength").split(",")]
-    offset = float(options.get("offset"))
-    aspect = float(options.get("aspect"))
-    threshold = int(options.get("threshold"))
+    win_size = int(options["size"])
+    orientation = [int(o) for o in options["orientation"].split(",")]
+    wavelength = [float(f) for f in options["wavelength"].split(",")]
+    offset = float(options["offset"])
+    aspect = float(options["aspect"])
+    threshold = int(options["threshold"])
 
-    if flags.get("i"):
+    if flags["i"]:
         ntype = "imag"
-    elif flags.get("b"):
+    elif flags["b"]:
         ntype = "b"
     else:
         ntype = "real"
 
-    if flags.get("q"):
+    if flags["q"]:
         if not threshold:
             grass.fatal("A percentile threshold is needed to quantify.")
         q = [2 ** i for i in range(len(orientation))]
@@ -186,17 +186,15 @@ if __name__ == "__main__":
 
     inarr = garray.array()
     inarr.read(input)
-    if flags.get("c"):
+    if flags["c"]:
         convolved = []
         if type(q) == list:
             for i in range(len(filters.keys())):
                 name = list(filters.keys())[i]
-                convolved.append(
-                    gabor_convolve(inarr, filters.get(name), threshold, q[i])
-                )
+                convolved.append(gabor_convolve(inarr, filters[name], threshold, q[i]))
         else:
             for name in filters.keys():
-                convolved.append(gabor_convolve(inarr, filters.get(name), threshold))
+                convolved.append(gabor_convolve(inarr, filters[name], threshold))
         outarr = garray.array()
         out = np.sum(convolved, axis=0)
         outarr[...] = out
@@ -204,5 +202,5 @@ if __name__ == "__main__":
     else:
         for name in filters.keys():
             outarr = garray.array()
-            outarr[...] = gabor_convolve(inarr, filters.get(name), threshold)
+            outarr[...] = gabor_convolve(inarr, filters[name], threshold)
             outarr.write(f"{name.replace('.', '')}_{output}")
