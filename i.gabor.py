@@ -39,17 +39,9 @@
 # %end
 
 # OPTIONS
-# %option
-# % key: input
-# % type: string
-# % required: yes
-# % description: Input raster
+# %option G_OPT_R_INPUT
 # %end
-# %option
-# % key: output
-# % type: string
-# % required: yes
-# % description: Output raster(s)
+# %option G_OPT_R_OUTPUT
 # %end
 # %option
 # % key: size
