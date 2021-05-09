@@ -144,7 +144,7 @@ def gabor_convolve(inarr, kern, thresh, quantify=0):
     return np.where(con >= per, con, 0)
 
 
-if __name__ == "__main__":
+def main():
     # Lazy import for scipy.signal.fftconvolve
     try:
         from scipy.signal import fftconvolve
@@ -204,3 +204,7 @@ if __name__ == "__main__":
             outarr = garray.array()
             outarr[...] = gabor_convolve(inarr, filters[name], threshold)
             outarr.write(f"{name.replace('.', '')}_{output}")
+
+if __name__ == "__main__":
+    options, flags = grass.parser()
+    sys.exit(main())
