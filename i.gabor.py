@@ -140,9 +140,6 @@ def gabor_convolve(inarr, kern, thresh, quantify=0):
 
 
 def main():
-    # Parse options and flags
-    options, flags = grass.parser()
-
     input = options["input"]
     output = options["output"]
 
