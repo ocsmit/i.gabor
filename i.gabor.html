@@ -64,6 +64,20 @@ I.e. if a cell has high responses at orientations 0 and 135 degrees, the
 combined raster cell will have a final output value of 9, which as a binary
 string is <i>0b00001001</i>.
 
+<h2>EXAMPLE</h2>
+The following examples use the North Carolina demo data orthophoto.
+
+<h3>Region 3</h3>
+
+<div class="code"><pre>
+i.gabor input=ortho_2001_t792_1m@user1 output=ortho_gabor_i@user1
+orientation='0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5' size=41
+wavelength=7 threshold=90 -i -c
+</div></pre>
+<center>
+	<img src="i_gabor_ortho.png" border=1><br>
+    <p>Imaginary component of North Carolina demo data orthophoto
+</center>
 
 <h2>AUTHOR</h2>
 <a href="mailto:ocsmit@protonmail.com">Owen Smith</a>
