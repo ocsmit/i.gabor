@@ -147,7 +147,7 @@ def main():
     output = options["output"]
 
     win_size = int(options["size"])
-    orientation = [int(o) for o in options["orientation"].split(",")]
+    orientation = [float(o) for o in options["orientation"].split(",")]
     wavelength = [float(f) for f in options["wavelength"].split(",")]
     offset = float(options["offset"])
     aspect = float(options["aspect"])
