@@ -189,6 +189,7 @@ def main():
             outarr[...] = gabor_convolve(inarr, filters[name], threshold)
             outarr.write(f"{name.replace('.', '')}_{output}")
 
+
 if __name__ == "__main__":
     # Lazy import for scipy.signal.fftconvolve
     try:
